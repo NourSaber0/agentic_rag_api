@@ -40,3 +40,46 @@ jobs:\
         QDRANT_API_KEY: "fake_qdrant_key"\
       run: |\
         pytest test_main.py -v}
+name: CI Pipeline
+
+# 1. When should this pipeline run?
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# 2. What should the pipeline do?
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # Borrows a free Linux server from GitHub
+
+    steps:
+    # Step A: Download your code onto the GitHub server
+    - name: Checkout Code
+      uses: actions/checkout@v3
+    
+    # Step B: Install Python
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+        
+    # Step C: Install your libraries (same as Docker)
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest httpx
+        pip install -r requirements.txt
+        
+    # Step D: Run your automated tests
+    - name: Run Pytest
+      env:
+        # We inject fake keys here so our "Fail Fast" security check 
+        # in main.py doesn't crash the test environment!
+        GROQ_API_KEY: "fake_groq_key"
+        QDRANT_URL: "https://fake-url.com"
+        QDRANT_API_KEY: "fake_qdrant_key"
+      run: |
+        pytest test_main.py -v
+eeabb4d4 (Initial commit: Add CI pipeline and Dockerization)
