@@ -10,6 +10,13 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    # --- NEW: Spin up a disposable Qdrant database for the test ---
+    services:
+      qdrant:
+        image: qdrant/qdrant:latest
+        ports:
+          - 6333:6333
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -28,7 +35,8 @@ jobs:
     - name: Run Pytest
       env:
         GROQ_API_KEY: "fake_groq_key"
-        QDRANT_URL: "https://fake-url.com"
-        QDRANT_API_KEY: "fake_qdrant_key"
+        # Point this to the disposable database we just spun up!
+        QDRANT_URL: "http://localhost:6333"
+        QDRANT_API_KEY: "fake_key_is_fine_here"
       run: |
         pytest test_main.py -v
